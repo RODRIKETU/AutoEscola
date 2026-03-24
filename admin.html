@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin — Autoescola Estrela</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:       #0d0d1a;
+      --sidebar:  #111126;
+      --card:     #181830;
+      --border:   rgba(255,255,255,0.08);
+      --gold:     #ffc107;
+      --gold2:    #ff9800;
+      --text:     #e8e8f0;
+      --muted:    rgba(255,255,255,0.45);
+      --success:  #28a745;
+      --danger:   #dc3545;
+      --input-bg: rgba(255,255,255,0.05);
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0d0d1a 0%, #111133 50%, #0a0a22 100%);
+    }
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 380px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+      animation: fade-in 0.35s ease;
+    }
+    @keyframes fade-in { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .login-logo { text-align: center; margin-bottom: 32px; }
+    .login-logo .icon { font-size: 44px; }
+    .login-logo h1 { font-size: 22px; font-weight: 800; color: var(--gold); margin: 8px 0 4px; }
+    .login-logo p  { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+    .form-group input {
+      width: 100%; padding: 12px 16px;
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--gold); }
+    .btn-primary {
+      width: 100%; padding: 13px; background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border: none; border-radius: 12px; color: #000; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.25s;
+      letter-spacing: 0.3px;
+    }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,193,7,0.4); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .login-error { color: #ff6b7a; font-size: 13px; text-align: center; margin-top: 14px; min-height: 18px; }
+
+    /* ── LAYOUT ADMIN ── */
+    #admin-screen { display: none; min-height: 100vh; }
+    .admin-layout { display: flex; min-height: 100vh; }
+
+    /* sidebar */
+    .sidebar {
+      width: 240px; flex-shrink: 0;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .sidebar-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-brand .brand-icon { font-size: 28px; }
+    .sidebar-brand h2 { font-size: 15px; font-weight: 800; color: var(--gold); margin: 6px 0 2px; }
+    .sidebar-brand p  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+    .sidebar-nav { padding: 16px 12px; flex: 1; }
+    .nav-section-label {
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 8px 8px 4px; margin-top: 8px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+      font-size: 13px; font-weight: 500; color: var(--muted);
+      transition: all 0.2s; margin-bottom: 2px; border: none;
+      background: none; width: 100%; text-align: left; font-family: 'Inter', sans-serif;
+    }
+    .nav-item .nav-icon { font-size: 16px; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+    .nav-item.active { background: rgba(255,193,7,0.12); color: var(--gold); font-weight: 600; }
+
+    .sidebar-footer {
+      padding: 16px 12px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-logout {
+      width: 100%; padding: 10px 12px;
+      background: rgba(220,53,69,0.12); border: 1px solid rgba(220,53,69,0.25);
+      border-radius: 10px; color: #ff6b7a; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-logout:hover { background: rgba(220,53,69,0.22); }
+
+    /* main content */
+    .admin-main { flex: 1; padding: 32px; overflow-y: auto; }
+
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-size: 22px; font-weight: 800; color: var(--text); }
+    .page-header p  { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* sections */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* cards */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; padding: 24px; margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 14px; font-weight: 700; color: var(--gold);
+      margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* form elements */
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+    .field input, .field textarea, .field select {
+      width: 100%; padding: 10px 14px;
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color 0.2s; resize: vertical;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--gold); }
+    .field textarea { min-height: 68px; }
+    .field-hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field-row-3 { display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 10px; }
+
+    .btn-save {
+      padding: 11px 28px; background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border: none; border-radius: 10px; color: #000; font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.25s;
+    }
+    .btn-save:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,193,7,0.4); }
+    .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* logo preview */
+    .logo-preview-wrap { display: flex; align-items: center; gap: 20px; margin-bottom: 16px; }
+    .logo-preview {
+      width: 180px; height: 80px; border-radius: 12px;
+      background: rgba(255,255,255,0.04); border: 2px dashed var(--border);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .logo-preview .no-logo { font-size: 11px; color: var(--muted); text-align: center; }
+    .btn-upload {
+      padding: 10px 20px; background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text); font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+    }
+    .btn-upload:hover { background: rgba(255,255,255,0.12); border-color: var(--gold); color: var(--gold); }
+    .btn-remove-logo {
+      padding: 10px 16px; background: rgba(220,53,69,0.1);
+      border: 1px solid rgba(220,53,69,0.2); border-radius: 10px;
+      color: #ff6b7a; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+    }
+    .btn-remove-logo:hover { background: rgba(220,53,69,0.2); }
+    #logo-file-input { display: none; }
+
+    /* QR preview */
+    .qr-wrap { display: flex; align-items: center; gap: 20px; margin-top: 12px; }
+    .qr-preview { border-radius: 12px; border: 3px solid #25D366; box-shadow: 0 4px 16px rgba(37,211,102,0.2); }
+
+    /* phone display */
+    .phone-display {
+      font-size: 18px; font-weight: 700; color: #25D366;
+      margin-bottom: 4px; padding: 8px 14px;
+      background: rgba(37,211,102,0.08); border-radius: 10px;
+      border: 1px solid rgba(37,211,102,0.2);
+    }
+    .phone-wa { font-size: 12px; color: var(--muted); }
+
+    /* plan tabs */
+    .plan-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+    .plan-tab {
+      padding: 8px 18px; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+    }
+    .plan-tab.active { background: rgba(255,193,7,0.12); border-color: rgba(255,193,7,0.35); color: var(--gold); }
+
+    /* package grid */
+    .pkg-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr 1.8fr 0.8fr 1.8fr;
+      gap: 8px; align-items: end; margin-bottom: 8px;
+    }
+    .pkg-grid-header {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr 1.8fr 0.8fr 1.8fr;
+      gap: 8px; margin-bottom: 4px;
+    }
+    .pkg-header-cell { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 2px; }
+    .pkg-grid input {
+      width: 100%; padding: 8px 10px;
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 12px; font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    .pkg-grid input:focus { border-color: var(--gold); }
+    .pkg-sep { height: 1px; background: var(--border); margin: 12px 0 8px; }
+
+    /* toast */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      padding: 12px 22px; border-radius: 12px;
+      font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events: none;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { background: #1a3d23; border: 1px solid #28a745; color: #6fcf97; }
+    #toast.error   { background: #3d1a1a; border: 1px solid #dc3545; color: #ff6b7a; }
+
+    /* divider */
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    @media (max-width: 768px) {
+      .admin-layout { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .sidebar-nav { display: flex; overflow-x: auto; padding: 8px; gap: 4px; }
+      .nav-section-label { display: none; }
+      .admin-main { padding: 16px; }
+      .pkg-grid, .pkg-grid-header { grid-template-columns: 1fr 1fr; }
+      .pkg-header-cell:nth-child(n+3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TELA DE LOGIN
+══════════════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">🏫</div>
+      <h1>Autoescola Estrela</h1>
+      <p>Painel Administrativo</p>
+    </div>
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label for="login-user">Usuário</label>
+        <input type="text" id="login-user" placeholder="admin" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label for="login-pass">Senha</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-primary" id="login-btn">Entrar</button>
+      <p class="login-error" id="login-error"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAINEL ADMIN
+══════════════════════════════════════════════════════════════════ -->
+<div id="admin-screen">
+  <div class="admin-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🏫</div>
+        <h2>Autoescola Estrela</h2>
+        <p>Painel Admin</p>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Configurações</div>
+        <button class="nav-item active" onclick="showSection('logo')" id="nav-logo">
+          <span class="nav-icon">🖼️</span> Logomarca
+        </button>
+        <button class="nav-item" onclick="showSection('contato')" id="nav-contato">
+          <span class="nav-icon">📱</span> Contato & WhatsApp
+        </button>
+        <button class="nav-item" onclick="showSection('planos')" id="nav-planos">
+          <span class="nav-icon">💰</span> Planos e Preços
+        </button>
+        <div class="nav-section-label">Conta</div>
+        <button class="nav-item" onclick="showSection('senha')" id="nav-senha">
+          <span class="nav-icon">🔒</span> Alterar Senha
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="doLogout()">🚪 Sair</button>
+      </div>
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main class="admin-main">
+
+      <!-- ── SEÇÃO: LOGOMARCA ── -->
+      <div class="section active" id="section-logo">
+        <div class="page-header">
+          <h1>🖼️ Logomarca</h1>
+          <p>Altere a imagem de logo exibida nas tabelas de preços e no menu</p>
+        </div>
+        <div class="card">
+          <div class="card-title">📷 Imagem atual</div>
+          <div class="logo-preview-wrap">
+            <div class="logo-preview" id="logo-preview-box">
+              <div class="no-logo" id="logo-no-text">Sem logo<br>carregando...</div>
+              <img id="logo-preview-img" style="display:none" alt="Logo">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button class="btn-upload" onclick="document.getElementById('logo-file-input').click()">
+                📂 Selecionar imagem
+              </button>
+              <button class="btn-remove-logo" onclick="removeLogo()">🗑️ Remover logo</button>
+              <input type="file" id="logo-file-input" accept="image/*" onchange="onLogoFile(event)">
+            </div>
+          </div>
+          <p class="field-hint">Formatos aceitos: PNG, JPG, SVG, WebP. Tamanho máximo recomendado: 2 MB.</p>
+          <div class="divider"></div>
+          <button class="btn-save" onclick="saveLogo()">💾 Salvar Logomarca</button>
+        </div>
+      </div>
+
+      <!-- ── SEÇÃO: CONTATO & WHATSAPP ── -->
+      <div class="section" id="section-contato">
+        <div class="page-header">
+          <h1>📱 Contato & WhatsApp</h1>
+          <p>O QR Code do WhatsApp é gerado automaticamente ao alterar o número</p>
+        </div>
+        <div class="card">
+          <div class="card-title">☎️ Número de telefone / WhatsApp</div>
+          <div class="field">
+            <label>Número (com DDD)</label>
+            <input type="text" id="phone-input" placeholder="Ex: (21) 99999-9999"
+                   oninput="updateQrPreview()" maxlength="20">
+            <p class="field-hint">Use o formato (DDD) XXXXX-XXXX. O QR Code se atualiza automaticamente.</p>
+          </div>
+          <div class="qr-wrap">
+            <div>
+              <div class="phone-display" id="phone-display-preview">—</div>
+              <div class="phone-wa" id="phone-wa-preview">wa.me/—</div>
+              <p style="font-size:11px;color:var(--muted);margin-top:6px;">Prévia do QR Code →</p>
+            </div>
+            <img id="qr-preview-img" width="120" height="120" class="qr-preview"
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 alt="QR Code WhatsApp">
+          </div>
+          <div class="divider"></div>
+          <button class="btn-save" onclick="savePhone()">💾 Salvar Número</button>
+        </div>
+      </div>
+
+      <!-- ── SEÇÃO: PLANOS E PREÇOS ── -->
+      <div class="section" id="section-planos">
+        <div class="page-header">
+          <h1>💰 Planos e Preços</h1>
+          <p>Edite os pacotes, valores e parcelas de cada tabela</p>
+        </div>
+        <div class="plan-tabs" id="plan-tabs"></div>
+        <div id="plan-editor"></div>
+        <button class="btn-save" onclick="savePlans()" style="margin-top:8px;">💾 Salvar Planos</button>
+      </div>
+
+      <!-- ── SEÇÃO: ALTERAR SENHA ── -->
+      <div class="section" id="section-senha">
+        <div class="page-header">
+          <h1>🔒 Alterar Senha</h1>
+          <p>Mantenha sua conta segura com uma senha forte</p>
+        </div>
+        <div class="card" style="max-width:440px">
+          <div class="card-title">🛡️ Nova senha</div>
+          <div class="field">
+            <label>Senha atual</label>
+            <input type="password" id="pw-current" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <div class="field">
+            <label>Nova senha</label>
+            <input type="password" id="pw-new" placeholder="••••••••" autocomplete="new-password">
+            <p class="field-hint">Mínimo de 6 caracteres</p>
+          </div>
+          <div class="field">
+            <label>Confirmar nova senha</label>
+            <input type="password" id="pw-confirm" placeholder="••••••••" autocomplete="new-password">
+          </div>
+          <div class="divider"></div>
+          <button class="btn-save" onclick="savePassword()">🔒 Alterar Senha</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+//  Estado global
+// ══════════════════════════════════════════════════════════════════════════
+let TOKEN = localStorage.getItem('admin_token') || '';
+let SETTINGS = { logo: '', phone: '', plans: [] };
+let CURRENT_PLAN_TAB = 0;
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Auth
+// ══════════════════════════════════════════════════════════════════════════
+async function doLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  errEl.textContent = '';
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao fazer login');
+    TOKEN = data.token;
+    localStorage.setItem('admin_token', TOKEN);
+    await loadAndShowAdmin();
+  } catch (err) {
+    errEl.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+}
+
+function doLogout() {
+  TOKEN = '';
+  localStorage.removeItem('admin_token');
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Inicialização
+// ══════════════════════════════════════════════════════════════════════════
+async function loadAndShowAdmin() {
+  try {
+    // Verificar token
+    const check = await apiFetch('/api/me');
+    if (!check.username) throw new Error('Token inválido');
+    // Carregar settings
+    const raw = await apiFetch('/api/settings');
+    SETTINGS.logo  = raw.logo  || '';
+    SETTINGS.phone = raw.phone || '';
+    SETTINGS.plans = Array.isArray(raw.plans) ? raw.plans : [];
+  } catch {
+    doLogout();
+    return;
+  }
+  document.getElementById('login-screen').style.display  = 'none';
+  document.getElementById('admin-screen').style.display  = 'block';
+  populateLogo();
+  populatePhone();
+  populatePlanTabs();
+  renderPlanEditor(0);
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  if (TOKEN) await loadAndShowAdmin();
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Navegação entre seções
+// ══════════════════════════════════════════════════════════════════════════
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Logo
+// ══════════════════════════════════════════════════════════════════════════
+function populateLogo() {
+  const img  = document.getElementById('logo-preview-img');
+  const noTx = document.getElementById('logo-no-text');
+  if (SETTINGS.logo) {
+    img.src = SETTINGS.logo;
+    img.style.display = 'block';
+    noTx.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    noTx.textContent = 'Sem logo\n(usa logo.png)';
+    noTx.style.display = 'block';
+  }
+}
+
+function onLogoFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    showToast('Imagem muito grande. Use um arquivo menor que 3 MB.', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    SETTINGS.logo = ev.target.result;
+    populateLogo();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  SETTINGS.logo = '';
+  populateLogo();
+  document.getElementById('logo-file-input').value = '';
+}
+
+async function saveLogo() {
+  try {
+    await apiFetch('/api/settings', 'PUT', { logo: SETTINGS.logo });
+    showToast('✅ Logomarca salva com sucesso!');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Telefone / QR Code
+// ══════════════════════════════════════════════════════════════════════════
+function populatePhone() {
+  document.getElementById('phone-input').value = SETTINGS.phone;
+  updateQrPreview();
+}
+
+function phoneToDigits(phone) {
+  const digits = phone.replace(/\D/g, '');
+  return digits.startsWith('55') ? digits : '55' + digits;
+}
+
+function updateQrPreview() {
+  const phone = document.getElementById('phone-input').value.trim();
+  const digits = phoneToDigits(phone);
+  const waLink = `https://wa.me/${digits}`;
+  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(waLink)}`;
+
+  document.getElementById('phone-display-preview').textContent = phone || '—';
+  document.getElementById('phone-wa-preview').textContent = phone ? `wa.me/${digits}` : 'wa.me/—';
+  if (phone.replace(/\D/g, '').length >= 8) {
+    document.getElementById('qr-preview-img').src = qrUrl;
+  }
+  SETTINGS.phone = phone;
+}
+
+async function savePhone() {
+  const phone = document.getElementById('phone-input').value.trim();
+  if (!phone) { showToast('Informe um número de telefone', 'error'); return; }
+  try {
+    await apiFetch('/api/settings', 'PUT', { phone });
+    SETTINGS.phone = phone;
+    showToast('✅ Número de telefone salvo!');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Planos e Preços
+// ══════════════════════════════════════════════════════════════════════════
+function populatePlanTabs() {
+  const tabsEl = document.getElementById('plan-tabs');
+  tabsEl.innerHTML = SETTINGS.plans.map((p, i) =>
+    `<button class="plan-tab${i === 0 ? ' active' : ''}" onclick="switchPlanTab(${i})" id="ptab-${i}">${esc(p.navLabel)}</button>`
+  ).join('');
+}
+
+function switchPlanTab(i) {
+  CURRENT_PLAN_TAB = i;
+  document.querySelectorAll('.plan-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+  renderPlanEditor(i);
+}
+
+function renderPlanEditor(i) {
+  const plan = SETTINGS.plans[i];
+  if (!plan) return;
+
+  const pkgRows = plan.packages.map((pkg, pi) => `
+    <div class="pkg-grid">
+      <input type="text" value="${esc(pkg.label)}" placeholder="Descrição" id="pkg-label-${i}-${pi}">
+      <input type="text" value="${esc(pkg.priceLeft)}" placeholder="0,00" id="pkg-pl-${i}-${pi}">
+      <input type="text" value="${esc(pkg.noteLeft)}" placeholder="Parcelas sem DUDA" id="pkg-nl-${i}-${pi}">
+      <input type="text" value="${esc(pkg.priceRight)}" placeholder="0,00" id="pkg-pr-${i}-${pi}">
+      <input type="text" value="${esc(pkg.noteRight)}" placeholder="Parcelas com DUDA" id="pkg-nr-${i}-${pi}">
+    </div>
+  `).join('');
+
+  document.getElementById('plan-editor').innerHTML = `
+    <div class="card">
+      <div class="card-title">🏷️ Configurações da Aba</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Nome da aba (menu de navegação)</label>
+          <input type="text" value="${esc(plan.navLabel)}" id="plan-navlabel-${i}">
+        </div>
+        <div class="field">
+          <label>Texto do banner amarelo (use \\n para quebrar linha)</label>
+          <input type="text" value="${esc(plan.yellowBox.replace(/\n/g, '\\n'))}" id="plan-yellowbox-${i}">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Cabeçalhos das colunas</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Cabeçalho — Coluna Esquerda (sem DUDA)</label>
+          <textarea id="plan-lh-${i}">${esc(plan.leftHeader)}</textarea>
+        </div>
+        <div class="field">
+          <label>Cabeçalho — Coluna Direita (com DUDA)</label>
+          <textarea id="plan-rh-${i}">${esc(plan.rightHeader)}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💰 Pacotes e Valores</div>
+      <div class="pkg-grid-header">
+        <div class="pkg-header-cell">Descrição do Pacote</div>
+        <div class="pkg-header-cell">Preço s/DUDA (R$)</div>
+        <div class="pkg-header-cell">Parcelas / Notas s/DUDA</div>
+        <div class="pkg-header-cell">Preço c/DUDA (R$)</div>
+        <div class="pkg-header-cell">Parcelas / Notas c/DUDA</div>
+      </div>
+      ${pkgRows}
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Itens Inclusos e Não Inclusos</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Inclusos — Coluna Esquerda (1 item por linha)</label>
+          <textarea id="plan-li-${i}" rows="5">${esc(plan.leftIncluded.join('\n'))}</textarea>
+        </div>
+        <div class="field">
+          <label>Não Inclusos — Coluna Esquerda (1 item por linha)</label>
+          <textarea id="plan-lni-${i}" rows="5">${esc(plan.leftNotIncluded.join('\n'))}</textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label>Inclusos — Coluna Direita / com DUDA (1 item por linha)</label>
+        <textarea id="plan-ri-${i}" rows="5">${esc(plan.rightIncluded.join('\n'))}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function readPlanFromForm(i) {
+  const plan = JSON.parse(JSON.stringify(SETTINGS.plans[i]));
+  plan.navLabel    = document.getElementById(`plan-navlabel-${i}`).value;
+  plan.yellowBox   = document.getElementById(`plan-yellowbox-${i}`).value.replace(/\\n/g, '\n');
+  plan.leftHeader  = document.getElementById(`plan-lh-${i}`).value;
+  plan.rightHeader = document.getElementById(`plan-rh-${i}`).value;
+
+  plan.packages = plan.packages.map((_, pi) => ({
+    label:      document.getElementById(`pkg-label-${i}-${pi}`).value,
+    priceLeft:  document.getElementById(`pkg-pl-${i}-${pi}`).value,
+    noteLeft:   document.getElementById(`pkg-nl-${i}-${pi}`).value,
+    priceRight: document.getElementById(`pkg-pr-${i}-${pi}`).value,
+    noteRight:  document.getElementById(`pkg-nr-${i}-${pi}`).value,
+  }));
+
+  plan.leftIncluded    = document.getElementById(`plan-li-${i}`).value.split('\n').map(s => s.trim()).filter(Boolean);
+  plan.leftNotIncluded = document.getElementById(`plan-lni-${i}`).value.split('\n').map(s => s.trim()).filter(Boolean);
+  plan.rightIncluded   = document.getElementById(`plan-ri-${i}`).value.split('\n').map(s => s.trim()).filter(Boolean);
+  return plan;
+}
+
+async function savePlans() {
+  // Lê o plano atual do form antes de salvar
+  SETTINGS.plans[CURRENT_PLAN_TAB] = readPlanFromForm(CURRENT_PLAN_TAB);
+  try {
+    await apiFetch('/api/settings', 'PUT', { plans: SETTINGS.plans });
+    // Atualiza o nome do tab no menu
+    populatePlanTabs();
+    showToast('✅ Planos e preços salvos com sucesso!');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Senha
+// ══════════════════════════════════════════════════════════════════════════
+async function savePassword() {
+  const current  = document.getElementById('pw-current').value;
+  const newPw    = document.getElementById('pw-new').value;
+  const confirm  = document.getElementById('pw-confirm').value;
+  if (!current || !newPw || !confirm) { showToast('Preencha todos os campos', 'error'); return; }
+  if (newPw !== confirm) { showToast('As senhas não coincidem', 'error'); return; }
+  if (newPw.length < 6)  { showToast('A nova senha deve ter pelo menos 6 caracteres', 'error'); return; }
+  try {
+    await apiFetch('/api/password', 'PUT', { currentPassword: current, newPassword: newPw });
+    document.getElementById('pw-current').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+    showToast('✅ Senha alterada com sucesso!');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Utilitários
+// ══════════════════════════════════════════════════════════════════════════
+async function apiFetch(url, method = 'GET', body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401) { doLogout(); }
+    throw new Error(data.error || `Erro ${res.status}`);
+  }
+  return data;
+}
+
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = type; }, 3200);
+}
+
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+</script>
+</body>
+</html>
