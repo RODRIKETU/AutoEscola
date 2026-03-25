@@ -19,36 +19,36 @@ services:
       restart_policy:
         condition: on-failure
         delay: 5s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_public"
 
-    labels:
-      - "traefik.enable=true"
+        # ── Roteamento HTTP → redireciona para HTTPS ──────────────────────────
+        - "traefik.http.routers.autoescola-http.rule=Host(`beta3.digmidia.com`)"
+        - "traefik.http.routers.autoescola-http.entrypoints=web"
+        - "traefik.http.routers.autoescola-http.middlewares=redirect-to-https"
 
-      # ── Roteamento HTTP → redireciona para HTTPS ──────────────────────────
-      - "traefik.http.routers.autoescola-http.rule=Host(`beta3.digmidia.com`)"
-      - "traefik.http.routers.autoescola-http.entrypoints=web"
-      - "traefik.http.routers.autoescola-http.middlewares=redirect-to-https"
+        # ── Roteamento HTTPS ──────────────────────────────────────────────────
+        - "traefik.http.routers.autoescola.rule=Host(`beta3.digmidia.com`)"
+        - "traefik.http.routers.autoescola.entrypoints=websecure"
+        - "traefik.http.routers.autoescola.tls=true"
+        - "traefik.http.routers.autoescola.tls.certresolver=letsencrypt"
 
-      # ── Roteamento HTTPS ──────────────────────────────────────────────────
-      - "traefik.http.routers.autoescola.rule=Host(`beta3.digmidia.com`)"
-      - "traefik.http.routers.autoescola.entrypoints=websecure"
-      - "traefik.http.routers.autoescola.tls=true"
-      - "traefik.http.routers.autoescola.tls.certresolver=letsencrypt"
+        # ── Serviço interno ───────────────────────────────────────────────────
+        - "traefik.http.services.autoescola.loadbalancer.server.port=3000"
 
-      # ── Serviço interno ───────────────────────────────────────────────────
-      - "traefik.http.services.autoescola.loadbalancer.server.port=3000"
+        # ── Middleware: redirect HTTP → HTTPS ─────────────────────────────────
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
 
-      # ── Middleware: redirect HTTP → HTTPS ─────────────────────────────────
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
-
-      # ── Middleware: cabeçalhos de segurança ───────────────────────────────
-      - "traefik.http.middlewares.autoescola-headers.headers.stsSeconds=31536000"
-      - "traefik.http.middlewares.autoescola-headers.headers.stsIncludeSubdomains=true"
-      - "traefik.http.middlewares.autoescola-headers.headers.forceSTSHeader=true"
-      - "traefik.http.middlewares.autoescola-headers.headers.contentTypeNosniff=true"
-      - "traefik.http.middlewares.autoescola-headers.headers.browserXssFilter=true"
-      - "traefik.http.middlewares.autoescola-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
-      - "traefik.http.routers.autoescola.middlewares=autoescola-headers"
+        # ── Middleware: cabeçalhos de segurança ───────────────────────────────
+        - "traefik.http.middlewares.autoescola-headers.headers.stsSeconds=31536000"
+        - "traefik.http.middlewares.autoescola-headers.headers.stsIncludeSubdomains=true"
+        - "traefik.http.middlewares.autoescola-headers.headers.forceSTSHeader=true"
+        - "traefik.http.middlewares.autoescola-headers.headers.contentTypeNosniff=true"
+        - "traefik.http.middlewares.autoescola-headers.headers.browserXssFilter=true"
+        - "traefik.http.middlewares.autoescola-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
+        - "traefik.http.routers.autoescola.middlewares=autoescola-headers"
 
 volumes:
   autoescola_data:
