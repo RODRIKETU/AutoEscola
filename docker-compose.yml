@@ -1,7 +1,6 @@
 services:
   autoescola:
     build: .
-    image: autoescola-estrela:latest
     container_name: autoescola-estrela
     restart: unless-stopped
 
