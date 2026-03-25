@@ -15,7 +15,7 @@ services:
       - autoescola_data:/app/data
 
     networks:
-      - traefik_proxy
+      - network_public
 
     labels:
       - "traefik.enable=true"
@@ -53,8 +53,6 @@ volumes:
     # O banco data.db ficará em /app/data/data.db dentro do container
 
 networks:
-  traefik_proxy:
+  network_public:
     external: true
-    # Nome da rede externa que o Traefik já utiliza no seu Portainer.
-    # Se o nome for diferente, ajuste aqui, ex: "traefik-public" ou "proxy"
-    name: traefik_proxy
+    name: network_public
