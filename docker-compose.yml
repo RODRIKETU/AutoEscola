@@ -1,8 +1,6 @@
 services:
   autoescola:
-    build: .
-    container_name: autoescola-estrela
-    restart: unless-stopped
+    image: ghcr.io/rodriketu/autoescola:latest
 
     environment:
       - PORT=3000
@@ -15,6 +13,12 @@ services:
 
     networks:
       - network_public
+
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
 
     labels:
       - "traefik.enable=true"
