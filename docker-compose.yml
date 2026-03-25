@@ -1,0 +1,60 @@
+services:
+  autoescola:
+    build: .
+    image: autoescola-estrela:latest
+    container_name: autoescola-estrela
+    restart: unless-stopped
+
+    environment:
+      - PORT=3000
+      # Defina JWT_SECRET nas variáveis de ambiente do stack no Portainer
+      - JWT_SECRET=${JWT_SECRET}
+
+    volumes:
+      # Persiste o banco SQLite fora do container
+      - autoescola_data:/app/data
+
+    networks:
+      - traefik_proxy
+
+    labels:
+      - "traefik.enable=true"
+
+      # ── Roteamento HTTP → redireciona para HTTPS ──────────────────────────
+      - "traefik.http.routers.autoescola-http.rule=Host(`beta3.digmidia.com`)"
+      - "traefik.http.routers.autoescola-http.entrypoints=web"
+      - "traefik.http.routers.autoescola-http.middlewares=redirect-to-https"
+
+      # ── Roteamento HTTPS ──────────────────────────────────────────────────
+      - "traefik.http.routers.autoescola.rule=Host(`beta3.digmidia.com`)"
+      - "traefik.http.routers.autoescola.entrypoints=websecure"
+      - "traefik.http.routers.autoescola.tls=true"
+      - "traefik.http.routers.autoescola.tls.certresolver=letsencrypt"
+
+      # ── Serviço interno ───────────────────────────────────────────────────
+      - "traefik.http.services.autoescola.loadbalancer.server.port=3000"
+
+      # ── Middleware: redirect HTTP → HTTPS ─────────────────────────────────
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+
+      # ── Middleware: cabeçalhos de segurança ───────────────────────────────
+      - "traefik.http.middlewares.autoescola-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.autoescola-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.autoescola-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.autoescola-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.autoescola-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.autoescola-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
+      - "traefik.http.routers.autoescola.middlewares=autoescola-headers"
+
+volumes:
+  autoescola_data:
+    driver: local
+    # O banco data.db ficará em /app/data/data.db dentro do container
+
+networks:
+  traefik_proxy:
+    external: true
+    # Nome da rede externa que o Traefik já utiliza no seu Portainer.
+    # Se o nome for diferente, ajuste aqui, ex: "traefik-public" ou "proxy"
+    name: traefik_proxy

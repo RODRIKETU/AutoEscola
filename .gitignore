@@ -2,6 +2,7 @@
 node_modules/
 
 # Banco de dados SQLite (dados locais/produção)
+data/
 data.db
 data.db-shm
 data.db-wal

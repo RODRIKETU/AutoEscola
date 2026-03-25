@@ -5,9 +5,12 @@ const Database  = require('better-sqlite3');
 const bcrypt    = require('bcryptjs');
 const jwt       = require('jsonwebtoken');
 const path      = require('path');
+const fs        = require('fs');
 
 const app        = express();
-const DB_PATH    = path.join(__dirname, 'data.db');
+const DB_DIR     = path.join(__dirname, 'data');
+const DB_PATH    = path.join(DB_DIR, 'data.db');
+fs.mkdirSync(DB_DIR, { recursive: true });
 const db         = new Database(DB_PATH);
 const JWT_SECRET = process.env.JWT_SECRET || 'ae-estrela-s3cr3t-2024-change-in-prod';
 const PORT       = process.env.PORT || 3000;
